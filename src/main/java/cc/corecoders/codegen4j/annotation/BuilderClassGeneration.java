@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BuilderClassGeneration {
-  boolean audit() default true;
+  boolean copyContructor() default true;
 }
