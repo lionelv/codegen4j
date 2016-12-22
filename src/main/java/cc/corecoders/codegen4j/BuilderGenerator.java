@@ -6,21 +6,23 @@ import com.squareup.javapoet.*;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class BuilderGenerator extends CodeGenerator {
-  private static final String THAT = "that";
+  final String ClassExtension = "Builder";
+  private static final String DIFF = "diff";
 
   private final ClassName className;
   private final ClassName builderName;
+  private final ClassName diffName;
+  private final ParameterizedTypeName optionalDiffName;
 
   BuilderGenerator(Class<?> clazz) {
     super(clazz);
     this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
-    this.builderName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + "Builder");
+    this.builderName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
+    this.diffName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + DiffGenerator.ClassExtension);
+    this.optionalDiffName = ParameterizedTypeName.get(ClassName.get(Optional.class), diffName);
   }
 
   @Override
@@ -33,7 +35,7 @@ public class BuilderGenerator extends CodeGenerator {
     System.out.println("Generating builder");
 
     TypeSpec.Builder builderSpec = TypeSpec.classBuilder(builderName.simpleName());
-    builderSpec.addField(className, THAT, Modifier.PRIVATE);
+    builderSpec.addField(optionalDiffName, DIFF, Modifier.PRIVATE);
 
     List<MethodParam> allFields = new ArrayList<>();
     for(Field field:clazz.getDeclaredFields()) {
@@ -42,7 +44,6 @@ public class BuilderGenerator extends CodeGenerator {
         continue;
 
       builderSpec.addField(field.getGenericType(), field.getName(), Modifier.PRIVATE);
-      builderSpec.addField(boolean.class, field.getName() + "Change", Modifier.PRIVATE);
 
       MethodParam param = new MethodParam(fieldAnnotation, field);
       allFields.add(param);
@@ -55,7 +56,7 @@ public class BuilderGenerator extends CodeGenerator {
 
     allFields.sort(Comparator.comparingInt(p -> p.spec.order()));
 
-    builderSpec.addMethod(constructorCopyMethod());
+    builderSpec.addMethod(diffConstructorMethod(allFields));
     builderSpec.addMethod(constructorMethod(allFields));
     builderSpec.addMethod(buildMethod(allFields));
 
@@ -67,15 +68,18 @@ public class BuilderGenerator extends CodeGenerator {
 
   }
 
-  private MethodSpec constructorCopyMethod() {
+  private MethodSpec diffConstructorMethod(List<MethodParam> fields) {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
-        constructor.addParameter(className, THAT);
-        constructor.addStatement("this.$L = $L", THAT, THAT);
+    constructor.addParameter(diffName, DIFF);
+    constructor.addStatement("this.$L = Optional.of($L)", DIFF, DIFF);
+    for(MethodParam param: fields)
+        constructor.addStatement("this.$L = $L.$L", param.field.getName(), DIFF, param.field.getName());
     return constructor.build();
   }
 
   private MethodSpec constructorMethod(List<MethodParam> fields) {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
+    constructor.addStatement("this.$L = Optional.empty()", DIFF);
     for(MethodParam param: fields) {
       if(param.spec.required()) {
         constructor.addParameter(param.field.getType(), param.field.getName());
@@ -88,12 +92,14 @@ public class BuilderGenerator extends CodeGenerator {
   }
 
   private MethodSpec withMethod(Field field) {
-    return MethodSpec.methodBuilder("with" + firstCharacterToUpperCase(field.getName()))
+    String name = field.getName();
+    String Name = firstCharacterToUpperCase(name);
+    return MethodSpec.methodBuilder("with" + Name)
                .addModifiers(Modifier.PUBLIC)
                .returns(builderName)
-               .addParameter(field.getGenericType(), field.getName())
-               .addStatement("this.$L = $L", field.getName(), field.getName())
-               .addStatement("this.$LChange = !$T.equals($L.get$L(), $L)", field.getName(), Objects.class, THAT, firstCharacterToUpperCase(field.getName()), field.getName())
+               .addParameter(field.getGenericType(), name)
+               .addStatement("this.$L = $L", name, name)
+               .addStatement("this.$L.ifPresent(d -> d.diff$L($L))", DIFF, Name, name)
                .addStatement("return this")
                .build();
   }

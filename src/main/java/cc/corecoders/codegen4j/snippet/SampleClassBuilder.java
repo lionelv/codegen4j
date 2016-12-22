@@ -2,50 +2,42 @@ package cc.corecoders.codegen4j.snippet;
 
 import cc.corecoders.codegen4j.test.SampleClass;
 
-import java.lang.Long;
-import java.lang.String;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 class SampleClassBuilder {
-  private SampleClass that;
+  private Optional<SampleClassDiff> diff;
 
   private int id;
 
-  private boolean idChange;
-
   private Long uuid;
-
-  private boolean uuidChange;
 
   private String name;
 
-  private boolean nameChange;
-
   private LocalDate datestamp;
-
-  private boolean datestampChange;
 
   private LocalDateTime timestamp;
 
-  private boolean timestampChange;
-
   private List<String> list;
-
-  private boolean listChange;
 
   private Map<String, String> map;
 
-  private boolean mapChange;
-
-  SampleClassBuilder(SampleClass that) {
-    this.that = that;
+  SampleClassBuilder(SampleClassDiff diff) {
+    this.diff = Optional.of(diff);
+    this.id = diff.id;
+    this.uuid = diff.uuid;
+    this.name = diff.name;
+    this.datestamp = diff.datestamp;
+    this.timestamp = diff.timestamp;
+    this.list = diff.list;
+    this.map = diff.map;
   }
 
   SampleClassBuilder(String name) {
+    this.diff = Optional.empty();
     this.id = 0;
     this.uuid = null;
     this.name = name;
@@ -57,31 +49,31 @@ class SampleClassBuilder {
 
   public SampleClassBuilder withName(String name) {
     this.name = name;
-    this.nameChange = !Objects.equals(that.getName(), name);
+    this.diff.ifPresent(d -> d.diffName(name));
     return this;
   }
 
   public SampleClassBuilder withDatestamp(LocalDate datestamp) {
     this.datestamp = datestamp;
-    this.datestampChange = !Objects.equals(that.getDatestamp(), datestamp);
+    this.diff.ifPresent(d -> d.diffDatestamp(datestamp));
     return this;
   }
 
   public SampleClassBuilder withTimestamp(LocalDateTime timestamp) {
     this.timestamp = timestamp;
-    this.timestampChange = !Objects.equals(that.getTimestamp(), timestamp);
+    this.diff.ifPresent(d -> d.diffTimestamp(timestamp));
     return this;
   }
 
   public SampleClassBuilder withList(List<String> list) {
     this.list = list;
-    this.listChange = !Objects.equals(that.getList(), list);
+    this.diff.ifPresent(d -> d.diffList(list));
     return this;
   }
 
   public SampleClassBuilder withMap(Map<String, String> map) {
     this.map = map;
-    this.mapChange = !Objects.equals(that.getMap(), map);
+    this.diff.ifPresent(d -> d.diffMap(map));
     return this;
   }
 

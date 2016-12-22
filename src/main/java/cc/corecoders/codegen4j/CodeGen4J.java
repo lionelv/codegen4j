@@ -55,6 +55,8 @@ public class CodeGen4J {
 
   private List<JavaFile> parseClass(Class<?> clazz) {
     ArrayList<JavaFile> builders = new ArrayList<>();
+    DiffGenerator diff = new DiffGenerator(clazz);
+    builders.addAll(diff.generate());
     BuilderGenerator builder = new BuilderGenerator(clazz);
     builders.addAll(builder.generate());
     return builders;
