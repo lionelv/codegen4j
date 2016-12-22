@@ -11,7 +11,7 @@ import java.util.Map;
 @BuilderClassGeneration
 public class SampleClass {
 
-  @BuilderFieldSpec(order = 0, immutable = true)
+  @BuilderFieldSpec(order = 0, immutable = true, init = "0")
   private int id;
   @BuilderFieldSpec(order = 1, immutable = true)
   private Long uuid;

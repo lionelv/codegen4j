@@ -25,7 +25,13 @@ class SampleClassBuilder {
   private Map<String, String> map;
 
   SampleClassBuilder(String name) {
+    this.id = 0;
+    this.uuid = null;
     this.name = name;
+    this.datestamp = null;
+    this.timestamp = null;
+    this.list = null;
+    this.map = null;
   }
 
   public SampleClassBuilder withName(String name) {
@@ -57,3 +63,4 @@ class SampleClassBuilder {
     return new SampleClass(id, uuid, name, datestamp, timestamp, list, map);
   }
 }
+
