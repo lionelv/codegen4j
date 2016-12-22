@@ -36,6 +36,34 @@ public class SampleClass {
     this.map = map;
   }
 
+  public int getId() {
+    return id;
+  }
+
+  public Long getUuid() {
+    return uuid;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public LocalDate getDatestamp() {
+    return datestamp;
+  }
+
+  public LocalDateTime getTimestamp() {
+    return timestamp;
+  }
+
+  public List<String> getList() {
+    return list;
+  }
+
+  public Map<String, String> getMap() {
+    return map;
+  }
+
   public String method() {
     return null;
   }
