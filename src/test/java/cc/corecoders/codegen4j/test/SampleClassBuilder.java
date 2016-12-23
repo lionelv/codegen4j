@@ -27,6 +27,7 @@ class SampleClassBuilder {
   private Map<String, String> map;
 
   SampleClassBuilder(SampleClassDiff diff) {
+    // pourri...
     this.diff = Optional.of(diff);
     this.id = diff.getRef().getId();
     this.uuid = diff.getRef().getUuid();

@@ -52,6 +52,7 @@ public class CodeGen4J {
   }
 
   private void parseClass(Class<?> clazz) throws IOException {
+    // remplacer le Diff generator par un BuilderObserver dont une implementation peut etre un diff... ou autre
     DiffGenerator diff = new DiffGenerator(clazz);
     generateFile(diff.generate());
     BuilderGenerator builder = new BuilderGenerator(clazz);
