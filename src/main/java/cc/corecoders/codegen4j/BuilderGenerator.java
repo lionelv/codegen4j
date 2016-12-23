@@ -72,8 +72,12 @@ public class BuilderGenerator extends CodeGenerator {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
     constructor.addParameter(diffName, DIFF);
     constructor.addStatement("this.$L = Optional.of($L)", DIFF, DIFF);
-    for(MethodParam param: fields)
-        constructor.addStatement("this.$L = $L.$L", param.field.getName(), DIFF, param.field.getName());
+    for(MethodParam param: fields) {
+      constructor.addStatement(
+          "this.$L = $L.get$L().get$L()",
+          param.field.getName(), DIFF, mCase(DiffGenerator.ReferenceField), mCase(param.field.getName())
+      );
+    }
     return constructor.build();
   }
 
@@ -93,7 +97,7 @@ public class BuilderGenerator extends CodeGenerator {
 
   private MethodSpec withMethod(Field field) {
     String name = field.getName();
-    String Name = firstCharacterToUpperCase(name);
+    String Name = mCase(name);
     return MethodSpec.methodBuilder("with" + Name)
                .addModifiers(Modifier.PUBLIC)
                .returns(builderName)

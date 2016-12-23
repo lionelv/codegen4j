@@ -29,6 +29,10 @@ class SampleClassDiff {
     this.ref = ref;
   }
 
+  public SampleClass getRef() {
+    return this.ref;
+  }
+
   public boolean equalsId() {
     return !this.id;
   }

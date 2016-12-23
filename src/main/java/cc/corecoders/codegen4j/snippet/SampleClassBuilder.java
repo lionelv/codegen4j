@@ -27,13 +27,13 @@ class SampleClassBuilder {
 
   SampleClassBuilder(SampleClassDiff diff) {
     this.diff = Optional.of(diff);
-    this.id = diff.id;
-    this.uuid = diff.uuid;
-    this.name = diff.name;
-    this.datestamp = diff.datestamp;
-    this.timestamp = diff.timestamp;
-    this.list = diff.list;
-    this.map = diff.map;
+    this.id = diff.getRef().getId();
+    this.uuid = diff.getRef().getUuid();
+    this.name = diff.getRef().getName();
+    this.datestamp = diff.getRef().getDatestamp();
+    this.timestamp = diff.getRef().getTimestamp();
+    this.list = diff.getRef().getList();
+    this.map = diff.getRef().getMap();
   }
 
   SampleClassBuilder(String name) {

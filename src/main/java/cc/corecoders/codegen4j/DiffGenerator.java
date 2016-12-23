@@ -16,8 +16,7 @@ import java.util.Objects;
 
 public class DiffGenerator extends CodeGenerator {
   static final String ClassExtension = "Diff";
-
-  private static final String THAT = "ref";
+  static final String ReferenceField = "ref";
 
   private final ClassName className;
   private final ClassName diffName;
@@ -38,7 +37,8 @@ public class DiffGenerator extends CodeGenerator {
     System.out.println("Generating auditor");
 
     TypeSpec.Builder diffSpec = TypeSpec.classBuilder(diffName.simpleName());
-    diffSpec.addField(className, THAT, Modifier.PRIVATE);
+    diffSpec.addField(className, ReferenceField, Modifier.PRIVATE);
+    diffSpec.addMethod(getterMethod(className, ReferenceField));
 
     List<MethodParam> allFields = new ArrayList<>();
     for(Field field:clazz.getDeclaredFields()) {
@@ -72,23 +72,23 @@ public class DiffGenerator extends CodeGenerator {
 
   private MethodSpec constructorCopyMethod() {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
-        constructor.addParameter(className, THAT);
-        constructor.addStatement("this.$L = $L", THAT, THAT);
+        constructor.addParameter(className, ReferenceField);
+        constructor.addStatement("this.$L = $L", ReferenceField, ReferenceField);
     return constructor.build();
   }
 
   private MethodSpec diffMethod(Field field) {
-    return MethodSpec.methodBuilder("diff" + firstCharacterToUpperCase(field.getName()))
+    return MethodSpec.methodBuilder("diff" + mCase(field.getName()))
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
                .addParameter(field.getGenericType(), field.getName())
-               .addStatement("this.$L = !$T.equals($L.get$L(), $L)", field.getName(), Objects.class, THAT, firstCharacterToUpperCase(field.getName()), field.getName())
+               .addStatement("this.$L = !$T.equals($L.get$L(), $L)", field.getName(), Objects.class, ReferenceField, mCase(field.getName()), field.getName())
                .addStatement("return this.$L", field.getName())
                .build();
   }
 
   private MethodSpec equalsMethod(Field field) {
-    return MethodSpec.methodBuilder("equals" + firstCharacterToUpperCase(field.getName()))
+    return MethodSpec.methodBuilder("equals" + mCase(field.getName()))
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
                .addStatement("return !this.$L", field.getName())
