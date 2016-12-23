@@ -3,10 +3,11 @@ package cc.corecoders.codegen4j;
 
 import com.squareup.javapoet.JavaFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -14,52 +15,53 @@ import java.util.jar.JarFile;
 
 public class CodeGen4J {
 
-  private String namespace;
-  private JarFile jarFile;
-  private URLClassLoader loader;
+  private final String namespace;
+  private final String generationPath;
+  private final JarFile jarFile;
+  private final URLClassLoader loader;
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
-    if (args.length != 2) {
-      System.out.println("usage : cmd <file.jar> <path/to/package>");
+    if (args.length != 3) {
+      System.out.println("usage : cmd <source.jar> <filtered.namespace> <generation/folder> ");
       return;
     }
 
-    CodeGen4J codeGen4J = new CodeGen4J(args[0], args[1]);
+    CodeGen4J codeGen4J = new CodeGen4J(args[0], args[1].replace('.', '/'), args[2]);
     codeGen4J.parseJar();
   }
 
 
-  private CodeGen4J(String jarPath, String namespace) throws IOException, ClassNotFoundException {
+  private CodeGen4J(String jarPath, String namespace, String generationPath) throws IOException, ClassNotFoundException {
     this.jarFile = new JarFile(jarPath);
     this.namespace = namespace;
+    this.generationPath = generationPath;
     URL jarUrl = new URL("jar", "file://", jarPath + "!/");
     this.loader = new URLClassLoader(new URL[]{jarUrl});
   }
 
-  private void parseJar() throws ClassNotFoundException {
+  private void parseJar() throws ClassNotFoundException, IOException {
     Enumeration<JarEntry> entries = jarFile.entries();
     while(entries.hasMoreElements()) {
       JarEntry entry = entries.nextElement();
       String classPath = entry.getName();
       if (!entry.isDirectory() && classPath.startsWith(namespace) && classPath.endsWith(".class")) {
         String className = classPath.substring(0, classPath.length() - 6).replace('/', '.');
-        Class<?> clazz = loader.loadClass(className);
-
-        List<JavaFile> javaFiles = parseClass(clazz);
-        for(JavaFile javaFile: javaFiles) {
-          System.out.println(javaFile.toString());
-        }
+        parseClass(loader.loadClass(className));
       }
     }
   }
 
-  private List<JavaFile> parseClass(Class<?> clazz) {
-    ArrayList<JavaFile> builders = new ArrayList<>();
+  private void parseClass(Class<?> clazz) throws IOException {
     DiffGenerator diff = new DiffGenerator(clazz);
-    builders.addAll(diff.generate());
+    generateFile(diff.generate());
     BuilderGenerator builder = new BuilderGenerator(clazz);
-    builders.addAll(builder.generate());
-    return builders;
+    generateFile(builder.generate());
+  }
+
+  private void generateFile(List<JavaFile> javaFiles) throws IOException {
+    File generationSourceFile = new File(generationPath);
+    for(JavaFile javaFile: javaFiles)
+      javaFile.writeTo(generationSourceFile);
   }
 
 }
