@@ -8,7 +8,7 @@ import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
 import java.util.*;
 
-public class BuilderGenerator extends CodeGenerator {
+public class Builder extends AbstractGenerator {
   final String ClassExtension = "Builder";
   private static final String DIFF = "diff";
 
@@ -17,11 +17,11 @@ public class BuilderGenerator extends CodeGenerator {
   private final ClassName diffName;
   private final ParameterizedTypeName optionalDiffName;
 
-  BuilderGenerator(Class<?> clazz) {
+  Builder(Class<?> clazz) {
     super(clazz);
     this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
     this.builderName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
-    this.diffName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + DiffGenerator.ClassExtension);
+    this.diffName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + BuilderObserver.ClassExtension);
     this.optionalDiffName = ParameterizedTypeName.get(ClassName.get(Optional.class), diffName);
   }
 
@@ -75,7 +75,7 @@ public class BuilderGenerator extends CodeGenerator {
     for(MethodParam param: fields) {
       constructor.addStatement(
           "this.$L = $L.get$L().get$L()",
-          param.field.getName(), DIFF, mCase(DiffGenerator.ReferenceField), mCase(param.field.getName())
+          param.field.getName(), DIFF, mCase(BuilderObserver.ReferenceField), mCase(param.field.getName())
       );
     }
     return constructor.build();

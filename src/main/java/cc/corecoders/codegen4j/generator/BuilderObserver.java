@@ -14,14 +14,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public class DiffGenerator extends CodeGenerator {
+public class BuilderObserver extends AbstractGenerator {
   static final String ClassExtension = "Diff";
   static final String ReferenceField = "ref";
 
   private final ClassName className;
   private final ClassName diffName;
 
-  DiffGenerator(Class<?> clazz) {
+  BuilderObserver(Class<?> clazz) {
     super(clazz);
     this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
     this.diffName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
