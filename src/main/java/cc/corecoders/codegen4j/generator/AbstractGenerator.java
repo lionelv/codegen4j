@@ -12,10 +12,9 @@ import java.util.List;
 
 public abstract class AbstractGenerator {
 
-  final Class<?> clazz;
-
-  AbstractGenerator(Class<?> clazz) {
-    this.clazz = clazz;
+  static String mCase(String str) {
+    char c = Character.toUpperCase(str.charAt(0));
+    return c + str.substring(1);
   }
 
   class MethodParam {
@@ -28,8 +27,11 @@ public abstract class AbstractGenerator {
     }
   }
 
-  public abstract List<JavaFile> generate();
+  final Class<?> clazz;
 
+  AbstractGenerator(Class<?> clazz) {
+    this.clazz = clazz;
+  }
 
   MethodSpec getterMethod(ClassName className, String ref) {
     return MethodSpec.methodBuilder("get" + mCase(ref))
@@ -38,9 +40,7 @@ public abstract class AbstractGenerator {
                .addStatement("return this.$L", ref)
                .build();
   }
-  String mCase(String str) {
-    char c = Character.toUpperCase(str.charAt(0));
-    return c + str.substring(1);
-  }
+
+  public abstract List<JavaFile> generate();
 
 }

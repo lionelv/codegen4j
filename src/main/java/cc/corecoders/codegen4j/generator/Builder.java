@@ -9,20 +9,21 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class Builder extends AbstractGenerator {
-  final String ClassExtension = "Builder";
-  private static final String DIFF = "diff";
+  static final String ClassExtension = "Builder";
+
+  static final String observer = "observer";
 
   private final ClassName className;
   private final ClassName builderName;
-  private final ClassName diffName;
-  private final ParameterizedTypeName optionalDiffName;
+  private final ClassName observerName;
+  private final ParameterizedTypeName optionalObserverName;
 
-  Builder(Class<?> clazz) {
+  public Builder(Class<?> clazz) {
     super(clazz);
     this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
     this.builderName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
-    this.diffName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + BuilderObserver.ClassExtension);
-    this.optionalDiffName = ParameterizedTypeName.get(ClassName.get(Optional.class), diffName);
+    this.observerName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + BuilderObserver.ClassExtension);
+    this.optionalObserverName = ParameterizedTypeName.get(ClassName.get(Optional.class), observerName);
   }
 
   @Override
@@ -35,7 +36,7 @@ public class Builder extends AbstractGenerator {
     System.out.println("Generating builder");
 
     TypeSpec.Builder builderSpec = TypeSpec.classBuilder(builderName.simpleName());
-    builderSpec.addField(optionalDiffName, DIFF, Modifier.PRIVATE);
+    builderSpec.addField(optionalObserverName, observer, Modifier.PRIVATE);
 
     List<MethodParam> allFields = new ArrayList<>();
     for(Field field:clazz.getDeclaredFields()) {
@@ -70,12 +71,12 @@ public class Builder extends AbstractGenerator {
 
   private MethodSpec diffConstructorMethod(List<MethodParam> fields) {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
-    constructor.addParameter(diffName, DIFF);
-    constructor.addStatement("this.$L = Optional.of($L)", DIFF, DIFF);
+    constructor.addParameter(observerName, observer);
+    constructor.addStatement("this.$L = Optional.of($L)", observer, observer);
     for(MethodParam param: fields) {
       constructor.addStatement(
           "this.$L = $L.get$L().get$L()",
-          param.field.getName(), DIFF, mCase(BuilderObserver.ReferenceField), mCase(param.field.getName())
+          param.field.getName(), observer, BuilderObserver.Reference, mCase(param.field.getName())
       );
     }
     return constructor.build();
@@ -83,7 +84,7 @@ public class Builder extends AbstractGenerator {
 
   private MethodSpec constructorMethod(List<MethodParam> fields) {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
-    constructor.addStatement("this.$L = Optional.empty()", DIFF);
+    constructor.addStatement("this.$L = Optional.empty()", observer);
     for(MethodParam param: fields) {
       if(param.spec.required()) {
         constructor.addParameter(param.field.getType(), param.field.getName());
@@ -103,7 +104,7 @@ public class Builder extends AbstractGenerator {
                .returns(builderName)
                .addParameter(field.getGenericType(), name)
                .addStatement("this.$L = $L", name, name)
-               .addStatement("this.$L.ifPresent(d -> d.diff$L($L))", DIFF, Name, name)
+               .addStatement("this.$L.ifPresent(d -> d.$L$L($L))", observer, BuilderObserver.notify, Name, name)
                .addStatement("return this")
                .build();
   }

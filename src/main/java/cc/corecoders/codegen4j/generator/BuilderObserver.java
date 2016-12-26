@@ -2,10 +2,7 @@ package cc.corecoders.codegen4j.generator;
 
 import cc.corecoders.codegen4j.annotation.BuilderClassGeneration;
 import cc.corecoders.codegen4j.annotation.BuilderFieldSpec;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
@@ -15,16 +12,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class BuilderObserver extends AbstractGenerator {
-  static final String ClassExtension = "Diff";
-  static final String ReferenceField = "ref";
+  static final String ClassExtension = "Observer";
+  static final String reference = "Reference";
+  static final String Reference = mCase(reference);
+  static final String notify = "notify";
 
   private final ClassName className;
-  private final ClassName diffName;
+  private final ClassName observerName;
 
-  BuilderObserver(Class<?> clazz) {
+  public BuilderObserver(Class<?> clazz) {
     super(clazz);
     this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
-    this.diffName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
+    this.observerName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
   }
 
   @Override
@@ -36,9 +35,9 @@ public class BuilderObserver extends AbstractGenerator {
 
     System.out.println("Generating auditor");
 
-    TypeSpec.Builder diffSpec = TypeSpec.classBuilder(diffName.simpleName());
-    diffSpec.addField(className, ReferenceField, Modifier.PRIVATE);
-    diffSpec.addMethod(getterMethod(className, ReferenceField));
+    TypeSpec.Builder notifySpec = TypeSpec.classBuilder(observerName.simpleName());
+    notifySpec.addField(className, reference, Modifier.PRIVATE, Modifier.FINAL);
+    notifySpec.addMethod(getterMethod(className, reference));
 
     List<MethodParam> allFields = new ArrayList<>();
     for(Field field:clazz.getDeclaredFields()) {
@@ -46,23 +45,22 @@ public class BuilderObserver extends AbstractGenerator {
       if(fieldAnnotation == null)
         continue;
 
-      diffSpec.addField(boolean.class, field.getName(), Modifier.PRIVATE);
+      FieldSpec fieldSpec = FieldSpec.builder(boolean.class, field.getName(), Modifier.PRIVATE).initializer("true;").build();
+      notifySpec.addField(fieldSpec);
 
       MethodParam param = new MethodParam(fieldAnnotation, field);
       allFields.add(param);
 
-      diffSpec.addMethod(equalsMethod(field));
-      diffSpec.addMethod(diffMethod(field));
+      notifySpec.addMethod(equalsMethod(field));
+      notifySpec.addMethod(notifyMethod(field));
     }
 
     allFields.sort(Comparator.comparingInt(p -> p.spec.order()));
 
-    diffSpec.addMethod(constructorCopyMethod());
-    MethodSpec diffMethod = globalDiffMethod(allFields);
-    diffSpec.addMethod(diffMethod);
-    diffSpec.addMethod(globalEqualsMethod(diffMethod));
+    notifySpec.addMethod(constructorCopyMethod());
+    notifySpec.addMethod(globalEqualsMethod(allFields));
 
-    JavaFile.Builder fileBuilder = JavaFile.builder(diffName.packageName(), diffSpec.build());
+    JavaFile.Builder fileBuilder = JavaFile.builder(observerName.packageName(), notifySpec.build());
     fileBuilder.addFileComment("Generated file, any modification can be lost...");
 
     javaFiles.add(fileBuilder.build());
@@ -72,17 +70,17 @@ public class BuilderObserver extends AbstractGenerator {
 
   private MethodSpec constructorCopyMethod() {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
-        constructor.addParameter(className, ReferenceField);
-        constructor.addStatement("this.$L = $L", ReferenceField, ReferenceField);
+        constructor.addParameter(className, reference);
+        constructor.addStatement("this.$L = $L", reference, reference);
     return constructor.build();
   }
 
-  private MethodSpec diffMethod(Field field) {
-    return MethodSpec.methodBuilder("diff" + mCase(field.getName()))
+  private MethodSpec notifyMethod(Field field) {
+    return MethodSpec.methodBuilder(notify + mCase(field.getName()))
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
                .addParameter(field.getGenericType(), field.getName())
-               .addStatement("this.$L = !$T.equals($L.get$L(), $L)", field.getName(), Objects.class, ReferenceField, mCase(field.getName()), field.getName())
+               .addStatement("this.$L = $T.equals($L.get$L(), $L)", field.getName(), Objects.class, reference, mCase(field.getName()), field.getName())
                .addStatement("return this.$L", field.getName())
                .build();
   }
@@ -91,28 +89,20 @@ public class BuilderObserver extends AbstractGenerator {
     return MethodSpec.methodBuilder("equals" + mCase(field.getName()))
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
-               .addStatement("return !this.$L", field.getName())
+               .addStatement("return this.$L", field.getName())
                .build();
   }
 
-  private MethodSpec globalDiffMethod(List<MethodParam> allFields) {
-    String orStatement = "";
+  private MethodSpec globalEqualsMethod(List<MethodParam> allFields) {
+    String andStatement = "";
     for(MethodParam p: allFields)
-      orStatement += " || " + p.field.getName();
-    orStatement = orStatement.substring(4);
+      andStatement += " && " + p.field.getName();
+    andStatement = andStatement.substring(4);
 
-    return MethodSpec.methodBuilder("diff")
-               .addModifiers(Modifier.PUBLIC)
-               .returns(boolean.class)
-               .addStatement("return $L", orStatement)
-               .build();
-  }
-
-  private MethodSpec globalEqualsMethod(MethodSpec diffMethod) {
     return MethodSpec.methodBuilder("equals")
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
-               .addStatement("return !$L()", diffMethod.name)
+               .addStatement("return $L", andStatement)
                .build();
   }
 

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 class SampleClassBuilder {
-  private Optional<SampleClassDiff> diff;
+  private Optional<SampleClassObserver> observer;
 
   private int id;
 
@@ -26,20 +26,19 @@ class SampleClassBuilder {
 
   private Map<String, String> map;
 
-  SampleClassBuilder(SampleClassDiff diff) {
-    // pourri...
-    this.diff = Optional.of(diff);
-    this.id = diff.getRef().getId();
-    this.uuid = diff.getRef().getUuid();
-    this.name = diff.getRef().getName();
-    this.datestamp = diff.getRef().getDatestamp();
-    this.timestamp = diff.getRef().getTimestamp();
-    this.list = diff.getRef().getList();
-    this.map = diff.getRef().getMap();
+  SampleClassBuilder(SampleClassObserver observer) {
+    this.observer = Optional.of(observer);
+    this.id = observer.getReference().getId();
+    this.uuid = observer.getReference().getUuid();
+    this.name = observer.getReference().getName();
+    this.datestamp = observer.getReference().getDatestamp();
+    this.timestamp = observer.getReference().getTimestamp();
+    this.list = observer.getReference().getList();
+    this.map = observer.getReference().getMap();
   }
 
   SampleClassBuilder(String name) {
-    this.diff = Optional.empty();
+    this.observer = Optional.empty();
     this.id = 0;
     this.uuid = null;
     this.name = name;
@@ -51,31 +50,31 @@ class SampleClassBuilder {
 
   public SampleClassBuilder withName(String name) {
     this.name = name;
-    this.diff.ifPresent(d -> d.diffName(name));
+    this.observer.ifPresent(d -> d.notifyName(name));
     return this;
   }
 
   public SampleClassBuilder withDatestamp(LocalDate datestamp) {
     this.datestamp = datestamp;
-    this.diff.ifPresent(d -> d.diffDatestamp(datestamp));
+    this.observer.ifPresent(d -> d.notifyDatestamp(datestamp));
     return this;
   }
 
   public SampleClassBuilder withTimestamp(LocalDateTime timestamp) {
     this.timestamp = timestamp;
-    this.diff.ifPresent(d -> d.diffTimestamp(timestamp));
+    this.observer.ifPresent(d -> d.notifyTimestamp(timestamp));
     return this;
   }
 
   public SampleClassBuilder withList(List<String> list) {
     this.list = list;
-    this.diff.ifPresent(d -> d.diffList(list));
+    this.observer.ifPresent(d -> d.notifyList(list));
     return this;
   }
 
   public SampleClassBuilder withMap(Map<String, String> map) {
     this.map = map;
-    this.diff.ifPresent(d -> d.diffMap(map));
+    this.observer.ifPresent(d -> d.notifyMap(map));
     return this;
   }
 
