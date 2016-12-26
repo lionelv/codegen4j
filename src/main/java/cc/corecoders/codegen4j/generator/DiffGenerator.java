@@ -1,4 +1,4 @@
-package cc.corecoders.codegen4j;
+package cc.corecoders.codegen4j.generator;
 
 import cc.corecoders.codegen4j.annotation.BuilderClassGeneration;
 import cc.corecoders.codegen4j.annotation.BuilderFieldSpec;

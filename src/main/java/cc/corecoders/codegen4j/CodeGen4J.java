@@ -1,13 +1,14 @@
 package cc.corecoders.codegen4j;
 
 
+import cc.corecoders.codegen4j.generator.BuilderGenerator;
+import cc.corecoders.codegen4j.generator.DiffGenerator;
 import com.squareup.javapoet.JavaFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
