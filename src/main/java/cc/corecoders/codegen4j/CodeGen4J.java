@@ -1,8 +1,7 @@
 package cc.corecoders.codegen4j;
 
 
-import cc.corecoders.codegen4j.generator.Builder;
-import cc.corecoders.codegen4j.generator.BuilderObserver;
+import cc.corecoders.codegen4j.generator.*;
 import com.squareup.javapoet.JavaFile;
 
 import java.io.File;
@@ -53,11 +52,11 @@ public class CodeGen4J {
   }
 
   private void parseClass(Class<?> clazz) throws IOException {
-    // remplacer le Diff generator par un BuilderObserver dont une implementation peut etre un diff... ou autre
-    BuilderObserver diff = new BuilderObserver(clazz);
-    generateFile(diff.generate());
-    Builder builder = new Builder(clazz);
-    generateFile(builder.generate());
+    generateFile(new Api(clazz).generate());
+//    generateFile(new Interface(clazz).generate());
+//    generateFile(new Bean(clazz).generate());
+//    generateFile(new BuilderObserver(clazz).generate());
+//    generateFile(new Builder(clazz).generate());
   }
 
   private void generateFile(List<JavaFile> javaFiles) throws IOException {

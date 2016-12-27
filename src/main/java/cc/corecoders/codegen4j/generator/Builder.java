@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class Builder extends AbstractGenerator {
-  static final String ClassExtension = "Builder";
+  static final String CarbonExtension = "Builder";
 
   static final String observer = "observer";
 
@@ -21,7 +21,7 @@ public class Builder extends AbstractGenerator {
   public Builder(Class<?> clazz) {
     super(clazz);
     this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
-    this.builderName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
+    this.builderName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + CarbonExtension);
     this.observerName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + BuilderObserver.ClassExtension);
     this.optionalObserverName = ParameterizedTypeName.get(ClassName.get(Optional.class), observerName);
   }
@@ -39,7 +39,7 @@ public class Builder extends AbstractGenerator {
     builderSpec.addField(optionalObserverName, observer, Modifier.PRIVATE);
 
     List<MethodParam> allFields = new ArrayList<>();
-    for(Field field:clazz.getDeclaredFields()) {
+    for(Field field: clazz.getDeclaredFields()) {
       BuilderFieldSpec fieldAnnotation = field.getAnnotation(BuilderFieldSpec.class);
       if(fieldAnnotation == null)
         continue;

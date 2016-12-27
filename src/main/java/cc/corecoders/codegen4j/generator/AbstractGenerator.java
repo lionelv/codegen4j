@@ -11,10 +11,15 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 public abstract class AbstractGenerator {
+  static final String SpecExtension = "Spec";
 
   static String mCase(String str) {
     char c = Character.toUpperCase(str.charAt(0));
     return c + str.substring(1);
+  }
+
+  static String className(String simpleName) {
+    return simpleName.substring(0, simpleName.length() - SpecExtension.length());
   }
 
   class MethodParam {
