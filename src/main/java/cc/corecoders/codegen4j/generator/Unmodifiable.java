@@ -9,8 +9,9 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class Unmodifiable extends AbstractGenerator {
 
@@ -18,6 +19,18 @@ public class Unmodifiable extends AbstractGenerator {
 
   private final ClassName apiName;
   private final ClassName unmodifiableName;
+
+  private static final List<String> immutableTypes = Arrays.asList(
+      boolean.class.getName(),
+      int.class.getName(),
+      long.class.getName(),
+      Boolean.class.getName(),
+      Integer.class.getName(),
+      Long.class.getName(),
+      String.class.getName(),
+      LocalDate.class.getName(),
+      LocalDateTime.class.getName()
+  );
 
   public Unmodifiable(Class<?> clazz, ClassName apiName, String unmodifiable) {
     super(clazz);
@@ -35,12 +48,12 @@ public class Unmodifiable extends AbstractGenerator {
     System.out.println("Generating unmodifiable");
 
     TypeSpec.Builder classSpec = TypeSpec.classBuilder(unmodifiableName.simpleName());
+    classSpec.addSuperinterface(apiName);
     classSpec.addField(apiName, source, Modifier.PRIVATE, Modifier.FINAL);
     classSpec.addMethod(MethodSpec.constructorBuilder()
         .addParameter(apiName, source)
         .addStatement("this.$L = $L", source, source)
-        .build()
-    );
+        .build());
 
     for(Field field: clazz.getDeclaredFields()) {
       ApiProperty fieldAnnotation = field.getAnnotation(ApiProperty.class);
@@ -60,10 +73,28 @@ public class Unmodifiable extends AbstractGenerator {
 
   private MethodSpec getterMethod(Field field) {
     String Name = mCase(field.getName());
-    return MethodSpec.methodBuilder("get" + Name)
-               .addModifiers(Modifier.PUBLIC)
-               .returns(field.getGenericType())
-               .addStatement("return $L.get$L()", source, Name)
-               .build();
+    MethodSpec.Builder method = MethodSpec.methodBuilder("get" + Name)
+        .addModifiers(Modifier.PUBLIC)
+        .returns(field.getGenericType());
+
+    String returnType = field.getType().getName();
+    if(immutableTypes.contains(returnType))
+      method.addStatement("return $L.get$L()", source, Name);
+    else if (List.class.getName().equals(returnType))
+      unmodifiableStatement(Name, method, List.class.getSimpleName());
+    else if (Set.class.getName().equals(returnType))
+      unmodifiableStatement(Name, method, Set.class.getSimpleName());
+    else if (Map.class.getName().equals(returnType))
+      unmodifiableStatement(Name, method, Map.class.getSimpleName());
+    else {
+      method.addComment("unmodifiable contract not fulfilled");
+      method.addStatement("return $L.get$L()", source, Name);
+    }
+
+    return method.build();
+  }
+
+  private void unmodifiableStatement(String name, MethodSpec.Builder method, String simpleName) {
+    method.addStatement("return $T.unmodifiable$L($L.get$L())", Collections.class, simpleName, source, name);
   }
 }

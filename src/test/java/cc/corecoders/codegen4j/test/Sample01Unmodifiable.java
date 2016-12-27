@@ -5,10 +5,11 @@ import java.lang.Long;
 import java.lang.String;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class Sample01Unmodifiable {
+class Sample01Unmodifiable implements Sample01 {
   private final Sample01 source;
 
   Sample01Unmodifiable(Sample01 source) {
@@ -36,10 +37,10 @@ class Sample01Unmodifiable {
   }
 
   public List<String> getList() {
-    return source.getList();
+    return Collections.unmodifiableList(source.getList());
   }
 
   public Map<String, String> getMap() {
-    return source.getMap();
+    return Collections.unmodifiableMap(source.getMap());
   }
 }
