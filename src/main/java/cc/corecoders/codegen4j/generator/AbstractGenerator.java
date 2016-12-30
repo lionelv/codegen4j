@@ -13,11 +13,6 @@ import java.util.List;
 public abstract class AbstractGenerator {
   static final String SpecExtension = "Spec";
 
-  static String mCase(String str) {
-    char c = Character.toUpperCase(str.charAt(0));
-    return c + str.substring(1);
-  }
-
   static String className(String simpleName) {
     return simpleName.substring(0, simpleName.length() - SpecExtension.length());
   }
@@ -39,7 +34,7 @@ public abstract class AbstractGenerator {
   }
 
   MethodSpec getterMethod(ClassName className, String ref) {
-    return MethodSpec.methodBuilder("get" + mCase(ref))
+    return MethodSpec.methodBuilder("get" + Generators.mCase(ref))
                .addModifiers(Modifier.PUBLIC)
                .returns(className)
                .addStatement("return this.$L", ref)
@@ -47,5 +42,6 @@ public abstract class AbstractGenerator {
   }
 
   public abstract List<JavaFile> generate();
+
 
 }

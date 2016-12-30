@@ -1,57 +1,40 @@
 package cc.corecoders.codegen4j.generator;
 
-import cc.corecoders.codegen4j.annotation.ApiClass;
-import cc.corecoders.codegen4j.annotation.ApiProperty;
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Bean extends AbstractGenerator {
-  private final ClassName apiName;
-  private final ClassName beanName;
+class Bean extends Api {
+  private TypeSpec.Builder beanSpec;
 
-  public Bean(Class<?> clazz, ClassName apiName, String bean) {
-    super(clazz);
-    this.apiName = apiName;
-    this.beanName = ClassName.get(apiName.packageName(), apiName.simpleName() + bean);
+  Bean(ApiGenerator api) {
+    super(api, ClassName.get(api.getInterfaceName().packageName(), api.getInterfaceName().simpleName() + ApiGenerator.BeanSuffix));
+    beanSpec = TypeSpec.classBuilder(className.simpleName());
+    beanSpec.addSuperinterface(api.getInterfaceName());
+    beanSpec.addMethod(MethodSpec.constructorBuilder().build());
   }
 
   @Override
-  public List<JavaFile> generate() {
-    List<JavaFile> javaFiles = new ArrayList<>();
-    ApiClass classAnnotation = clazz.getAnnotation(ApiClass.class);
-    if(classAnnotation == null)
-      return javaFiles;
-
-    TypeSpec.Builder classSpec = TypeSpec.classBuilder(beanName.simpleName());
-    classSpec.addSuperinterface(apiName);
-    classSpec.addMethod(MethodSpec.constructorBuilder().build());
-
-    for(Field field: clazz.getDeclaredFields()) {
-      ApiProperty fieldAnnotation = field.getAnnotation(ApiProperty.class);
-      if(fieldAnnotation == null)
-        continue;
-
-      classSpec.addField(field.getGenericType(), field.getName(), Modifier.PRIVATE);
-      classSpec.addMethod(getterMethod(field));
-      classSpec.addMethod(setterMethod(field));
-    }
-
-    JavaFile.Builder fileBuilder = JavaFile.builder(beanName.packageName(), classSpec.build());
-    fileBuilder.addFileComment("Generated file, any modification can be lost...");
-
-    javaFiles.add(fileBuilder.build());
-    return javaFiles;
-
+  TypeSpec.Builder builder() {
+    return beanSpec;
   }
+
+  @Override
+  void addProperty(Property property) {
+    beanSpec.addField(property.field.getGenericType(), property.field.getName(), Modifier.PRIVATE);
+    beanSpec.addMethod(getterMethod(property.field));
+    beanSpec.addMethod(setterMethod(property.field));
+  }
+
 
   private MethodSpec getterMethod(Field field) {
     String name = field.getName();
-    return MethodSpec.methodBuilder("get" + mCase(name))
+    return MethodSpec.methodBuilder("get" + Generators.mCase(name))
                .addModifiers(Modifier.PUBLIC)
+               .addAnnotation(Override.class)
                .returns(field.getGenericType())
                .addStatement("return $L", name)
                .build();
@@ -59,7 +42,7 @@ public class Bean extends AbstractGenerator {
 
   private MethodSpec setterMethod(Field field) {
     String name = field.getName();
-    return MethodSpec.methodBuilder("set" + mCase(name))
+    return MethodSpec.methodBuilder("set" + Generators.mCase(name))
                .addModifiers(Modifier.PUBLIC)
                .addParameter(field.getGenericType(), name)
                .addStatement("this.$L = $L", name, name)

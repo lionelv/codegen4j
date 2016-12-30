@@ -1,6 +1,8 @@
 // Generated file, any modification can be lost...
 package cc.corecoders.codegen4j.test;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.lang.Long;
 import java.lang.Override;
 import java.lang.String;
@@ -9,22 +11,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-class Sample01Bean implements Sample01 {
-  private int id;
+class ImmutableSample01 implements Sample01 {
+  private final int id;
 
-  private Long uuid;
+  private final Long uuid;
 
-  private String name;
+  private final String name;
 
-  private LocalDate datestamp;
+  private final LocalDate datestamp;
 
-  private LocalDateTime timestamp;
+  private final LocalDateTime timestamp;
 
-  private List<String> list;
+  private final List<String> list;
 
-  private Map<String, String> map;
+  private final Map<String, String> map;
 
-  Sample01Bean() {
+  ImmutableSample01(Sample01 source) {
+    this.id = source.getId();
+    this.uuid = source.getUuid();
+    this.name = source.getName();
+    this.datestamp = source.getDatestamp();
+    this.timestamp = source.getTimestamp();
+    this.list = ImmutableList.copyOf(source.getList());
+    this.map = ImmutableMap.copyOf(source.getMap());
   }
 
   @Override
@@ -32,17 +41,9 @@ class Sample01Bean implements Sample01 {
     return id;
   }
 
-  public void setId(int id) {
-    this.id = id;
-  }
-
   @Override
   public Long getUuid() {
     return uuid;
-  }
-
-  public void setUuid(Long uuid) {
-    this.uuid = uuid;
   }
 
   @Override
@@ -50,17 +51,9 @@ class Sample01Bean implements Sample01 {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   @Override
   public LocalDate getDatestamp() {
     return datestamp;
-  }
-
-  public void setDatestamp(LocalDate datestamp) {
-    this.datestamp = datestamp;
   }
 
   @Override
@@ -68,25 +61,13 @@ class Sample01Bean implements Sample01 {
     return timestamp;
   }
 
-  public void setTimestamp(LocalDateTime timestamp) {
-    this.timestamp = timestamp;
-  }
-
   @Override
   public List<String> getList() {
     return list;
   }
 
-  public void setList(List<String> list) {
-    this.list = list;
-  }
-
   @Override
   public Map<String, String> getMap() {
     return map;
-  }
-
-  public void setMap(Map<String, String> map) {
-    this.map = map;
   }
 }

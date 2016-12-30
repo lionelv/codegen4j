@@ -14,7 +14,7 @@ import java.util.Objects;
 public class BuilderObserver extends AbstractGenerator {
   static final String ClassExtension = "Observer";
   static final String reference = "Reference";
-  static final String Reference = mCase(reference);
+  static final String Reference = Generators.mCase(reference);
   static final String notify = "notify";
 
   private final ClassName className;
@@ -76,17 +76,17 @@ public class BuilderObserver extends AbstractGenerator {
   }
 
   private MethodSpec notifyMethod(Field field) {
-    return MethodSpec.methodBuilder(notify + mCase(field.getName()))
+    return MethodSpec.methodBuilder(notify + Generators.mCase(field.getName()))
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
                .addParameter(field.getGenericType(), field.getName())
-               .addStatement("this.$L = $T.equals($L.get$L(), $L)", field.getName(), Objects.class, reference, mCase(field.getName()), field.getName())
+               .addStatement("this.$L = $T.equals($L.get$L(), $L)", field.getName(), Objects.class, reference, Generators.mCase(field.getName()), field.getName())
                .addStatement("return this.$L", field.getName())
                .build();
   }
 
   private MethodSpec equalsMethod(Field field) {
-    return MethodSpec.methodBuilder("equals" + mCase(field.getName()))
+    return MethodSpec.methodBuilder("equals" + Generators.mCase(field.getName()))
                .addModifiers(Modifier.PUBLIC)
                .returns(boolean.class)
                .addStatement("return this.$L", field.getName())

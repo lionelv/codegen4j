@@ -76,7 +76,7 @@ public class Builder extends AbstractGenerator {
     for(MethodParam param: fields) {
       constructor.addStatement(
           "this.$L = $L.get$L().get$L()",
-          param.field.getName(), observer, BuilderObserver.Reference, mCase(param.field.getName())
+          param.field.getName(), observer, BuilderObserver.Reference, Generators.mCase(param.field.getName())
       );
     }
     return constructor.build();
@@ -98,7 +98,7 @@ public class Builder extends AbstractGenerator {
 
   private MethodSpec withMethod(Field field) {
     String name = field.getName();
-    String Name = mCase(name);
+    String Name = Generators.mCase(name);
     return MethodSpec.methodBuilder("with" + Name)
                .addModifiers(Modifier.PUBLIC)
                .returns(builderName)

@@ -52,7 +52,7 @@ public class CodeGen4J {
   }
 
   private void parseClass(Class<?> clazz) throws IOException {
-    generateFile(new Api(clazz).generate());
+    generateFile(new ApiGenerator(clazz).generate());
 //    generateFile(new Interface(clazz).generate());
 //    generateFile(new Bean(clazz).generate());
 //    generateFile(new BuilderObserver(clazz).generate());
