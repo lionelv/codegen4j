@@ -20,7 +20,7 @@ class Sample01BuilderObserver {
 
   private boolean datestamp = true;
 
-  private boolean timestamp = true;
+  private boolean listTimestamp = true;
 
   private boolean list = true;
 
@@ -70,13 +70,13 @@ class Sample01BuilderObserver {
     return this.datestamp;
   }
 
-  public boolean equalsTimestamp() {
-    return this.timestamp;
+  public boolean equalsListTimestamp() {
+    return this.listTimestamp;
   }
 
-  public boolean notifyTimestamp(LocalDateTime timestamp) {
-    this.timestamp = Objects.equals(reference.getTimestamp(), timestamp);
-    return this.timestamp;
+  public boolean notifyListTimestamp(LocalDateTime listTimestamp) {
+    this.listTimestamp = Objects.equals(reference.getListTimestamp(), listTimestamp);
+    return this.listTimestamp;
   }
 
   public boolean equalsList() {
@@ -98,6 +98,6 @@ class Sample01BuilderObserver {
   }
 
   public boolean equals() {
-    return id && uuid && name && datestamp && timestamp && list && map;
+    return id && uuid && name && datestamp && listTimestamp && list && map;
   }
 }

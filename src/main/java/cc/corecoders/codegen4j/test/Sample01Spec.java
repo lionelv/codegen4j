@@ -10,6 +10,7 @@ import java.util.Map;
 
 @ApiClass(builder = ApiClass.BuilderSpec.Observable)
 public class Sample01Spec {
+  private final String listGroup = "TheList";
 
   @ApiProperty(order = 1, init = "0")
   private int id;
@@ -23,10 +24,10 @@ public class Sample01Spec {
   @ApiProperty(order = 4)
   private LocalDate datestamp;
 
-  @ApiProperty(order = 5)
-  private LocalDateTime timestamp;
+  @ApiProperty(order = 5, group = listGroup)
+  private LocalDateTime listTimestamp;
 
-  @ApiProperty(order = 6)
+  @ApiProperty(order = 6, group = listGroup)
   private List<String> list;
 
   @ApiProperty(order = 7)

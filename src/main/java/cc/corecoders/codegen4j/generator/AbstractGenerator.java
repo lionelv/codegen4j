@@ -16,16 +16,6 @@ public abstract class AbstractGenerator {
     return simpleName.substring(0, simpleName.length() - SpecExtension.length());
   }
 
-  class MethodParam {
-    final BuilderFieldSpec spec;
-    final Field field;
-
-    MethodParam(BuilderFieldSpec spec, Field field) {
-      this.spec = spec;
-      this.field = field;
-    }
-  }
-
   final Class<?> clazz;
 
   AbstractGenerator(Class<?> clazz) {

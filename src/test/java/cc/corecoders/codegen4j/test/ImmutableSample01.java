@@ -20,7 +20,7 @@ class ImmutableSample01 implements Sample01 {
 
   private final LocalDate datestamp;
 
-  private final LocalDateTime timestamp;
+  private final LocalDateTime listTimestamp;
 
   private final List<String> list;
 
@@ -31,7 +31,7 @@ class ImmutableSample01 implements Sample01 {
     this.uuid = source.getUuid();
     this.name = source.getName();
     this.datestamp = source.getDatestamp();
-    this.timestamp = source.getTimestamp();
+    this.listTimestamp = source.getListTimestamp();
     this.list = ImmutableList.copyOf(source.getList());
     this.map = ImmutableMap.copyOf(source.getMap());
   }
@@ -57,8 +57,8 @@ class ImmutableSample01 implements Sample01 {
   }
 
   @Override
-  public LocalDateTime getTimestamp() {
-    return timestamp;
+  public LocalDateTime getListTimestamp() {
+    return listTimestamp;
   }
 
   @Override

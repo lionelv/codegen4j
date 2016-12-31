@@ -12,4 +12,5 @@ public @interface ApiProperty {
   int order(); // for builder constructor retro-compatibility
   boolean required() default false;
   String init() default "null";
+  String group() default "";
 }

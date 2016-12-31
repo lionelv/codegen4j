@@ -17,7 +17,7 @@ public interface Sample01 {
 
   LocalDate getDatestamp();
 
-  LocalDateTime getTimestamp();
+  LocalDateTime getListTimestamp();
 
   List<String> getList();
 

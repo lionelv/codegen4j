@@ -20,7 +20,7 @@ class Sample01Builder {
 
   private LocalDate datestamp;
 
-  private LocalDateTime timestamp;
+  private LocalDateTime listTimestamp;
 
   private List<String> list;
 
@@ -32,7 +32,7 @@ class Sample01Builder {
     this.uuid = null;
     this.name = name;
     this.datestamp = null;
-    this.timestamp = null;
+    this.listTimestamp = null;
     this.list = null;
     this.map = null;
   }
@@ -43,26 +43,14 @@ class Sample01Builder {
     this.uuid = observer.getReference().getUuid();
     this.name = observer.getReference().getName();
     this.datestamp = observer.getReference().getDatestamp();
-    this.timestamp = observer.getReference().getTimestamp();
+    this.listTimestamp = observer.getReference().getListTimestamp();
     this.list = observer.getReference().getList();
     this.map = observer.getReference().getMap();
-  }
-
-  public Sample01Builder withId(int id) {
-    this.id = id;
-    this.observer.ifPresent(d -> d.notifyId(id));
-    return this;
   }
 
   public Sample01Builder withUuid(Long uuid) {
     this.uuid = uuid;
     this.observer.ifPresent(d -> d.notifyUuid(uuid));
-    return this;
-  }
-
-  public Sample01Builder withName(String name) {
-    this.name = name;
-    this.observer.ifPresent(d -> d.notifyName(name));
     return this;
   }
 
@@ -72,15 +60,17 @@ class Sample01Builder {
     return this;
   }
 
-  public Sample01Builder withTimestamp(LocalDateTime timestamp) {
-    this.timestamp = timestamp;
-    this.observer.ifPresent(d -> d.notifyTimestamp(timestamp));
+  public Sample01Builder withTheList(LocalDateTime listTimestamp, List<String> list) {
+    this.listTimestamp = listTimestamp;
+    this.observer.ifPresent(d -> d.notifyListTimestamp(listTimestamp));
+    this.list = list;
+    this.observer.ifPresent(d -> d.notifyList(list));
     return this;
   }
 
-  public Sample01Builder withList(List<String> list) {
-    this.list = list;
-    this.observer.ifPresent(d -> d.notifyList(list));
+  public Sample01Builder withId(int id) {
+    this.id = id;
+    this.observer.ifPresent(d -> d.notifyId(id));
     return this;
   }
 
@@ -88,5 +78,15 @@ class Sample01Builder {
     this.map = map;
     this.observer.ifPresent(d -> d.notifyMap(map));
     return this;
+  }
+
+  public Sample01Builder withName(String name) {
+    this.name = name;
+    this.observer.ifPresent(d -> d.notifyName(name));
+    return this;
+  }
+
+  public Sample01 build() {
+    return null; //new Sample01Builder(id, uuid, name, datestamp, listTimestamp, list, map);
   }
 }

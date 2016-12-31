@@ -38,8 +38,8 @@ class UnmodifiableSample01 implements Sample01 {
   }
 
   @Override
-  public LocalDateTime getTimestamp() {
-    return source.getTimestamp();
+  public LocalDateTime getListTimestamp() {
+    return source.getListTimestamp();
   }
 
   @Override

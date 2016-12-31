@@ -7,7 +7,9 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class Builder extends Api {
@@ -19,6 +21,7 @@ public class Builder extends Api {
   private String ctorArgs;
   private MethodSpec.Builder constructor;
   private MethodSpec.Builder observerConstructor;
+  private Map<String, MethodSpec.Builder> withMethods = new HashMap<>();
 
   Builder(ApiGenerator api) {
     this(api, null);
@@ -53,7 +56,6 @@ public class Builder extends Api {
   void addProperty(Property property) {
     String fieldName = property.field.getName();
     builderSpec.addField(property.field.getGenericType(), fieldName, Modifier.PRIVATE);
-    builderSpec.addMethod(withMethod(property.field));
 
     ctorArgs += ", " + fieldName;
 
@@ -69,6 +71,8 @@ public class Builder extends Api {
           fieldName, observer, BuilderObserver.Reference, Generators.mCase(fieldName)
       );
     }
+
+    withMethod(property);
   }
 
   @Override
@@ -76,21 +80,40 @@ public class Builder extends Api {
     builderSpec.addMethod(constructor.build());
     if(isObservable())
       builderSpec.addMethod(observerConstructor.build());
+
+    for(MethodSpec.Builder withMethod: withMethods.values()) {
+      withMethod.addStatement("return this");
+      builderSpec.addMethod(withMethod.build());
+    }
+
     builderSpec.addMethod(buildMethod());
   }
 
-  private MethodSpec withMethod(Field field) {
-    String name = field.getName();
-    String Name = Generators.mCase(name);
-    MethodSpec.Builder withMethod = MethodSpec.methodBuilder("with" + Name)
-        .addModifiers(Modifier.PUBLIC)
-        .returns(className)
-        .addParameter(field.getGenericType(), name)
-        .addStatement("this.$L = $L", name, name);
-    if(isObservable())
-      withMethod.addStatement("this.$L.ifPresent(d -> d.$L$L($L))", observer, BuilderObserver.notify, Name, name);
+  private void withMethod(Property property) {
 
-    return withMethod.addStatement("return this").build();
+    String name = property.field.getName();
+    String Name = Generators.mCase(name);
+    MethodSpec.Builder withMethod;
+    if(property.annotation.group().isEmpty()) {
+      withMethod = MethodSpec.methodBuilder("with" + Name)
+          .addModifiers(Modifier.PUBLIC)
+          .returns(className);
+      withMethods.put(Name, withMethod);
+
+    } else {
+        withMethod = withMethods.get(property.annotation.group());
+        if (withMethod == null) {
+          withMethod = MethodSpec.methodBuilder("with" + property.annotation.group())
+              .addModifiers(Modifier.PUBLIC)
+              .returns(className);
+          withMethods.put(property.annotation.group(), withMethod);
+        }
+    }
+
+    withMethod.addParameter(property.field.getGenericType(), name)
+        .addStatement("this.$L = $L", name, name);
+    if (isObservable())
+      withMethod.addStatement("this.$L.ifPresent(d -> d.$L$L($L))", observer, BuilderObserver.notify, Name, name);
   }
 
   private MethodSpec buildMethod() {

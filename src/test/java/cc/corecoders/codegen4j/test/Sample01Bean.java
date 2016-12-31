@@ -18,7 +18,7 @@ class Sample01Bean implements Sample01 {
 
   private LocalDate datestamp;
 
-  private LocalDateTime timestamp;
+  private LocalDateTime listTimestamp;
 
   private List<String> list;
 
@@ -64,12 +64,12 @@ class Sample01Bean implements Sample01 {
   }
 
   @Override
-  public LocalDateTime getTimestamp() {
-    return timestamp;
+  public LocalDateTime getListTimestamp() {
+    return listTimestamp;
   }
 
-  public void setTimestamp(LocalDateTime timestamp) {
-    this.timestamp = timestamp;
+  public void setListTimestamp(LocalDateTime listTimestamp) {
+    this.listTimestamp = listTimestamp;
   }
 
   @Override
