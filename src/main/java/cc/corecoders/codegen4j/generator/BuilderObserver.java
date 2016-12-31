@@ -1,76 +1,56 @@
 package cc.corecoders.codegen4j.generator;
 
-import cc.corecoders.codegen4j.annotation.BuilderClassGeneration;
-import cc.corecoders.codegen4j.annotation.BuilderFieldSpec;
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public class BuilderObserver extends AbstractGenerator {
-  static final String ClassExtension = "Observer";
-  static final String reference = "Reference";
+public class BuilderObserver extends Api {
+
+  private TypeSpec.Builder observerSpec;
+
+  static final String reference = "reference";
   static final String Reference = Generators.mCase(reference);
   static final String notify = "notify";
 
-  private final ClassName className;
-  private final ClassName observerName;
-
-  public BuilderObserver(Class<?> clazz) {
-    super(clazz);
-    this.className = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName());
-    this.observerName = ClassName.get(clazz.getPackage().getName(), clazz.getSimpleName() + ClassExtension);
+  BuilderObserver(ApiGenerator api) {
+    super(api, ClassName.get(api.getInterfaceName().packageName(), api.getInterfaceName().simpleName() + ApiGenerator.BuilderObserverSufix));
+    this.observerSpec = TypeSpec.classBuilder(className.simpleName());
+    this.observerSpec.addField(api.getInterfaceName(), reference, Modifier.PRIVATE, Modifier.FINAL);
+    this.observerSpec.addMethod(MethodSpec.methodBuilder("get" + Reference)
+        .returns(api.getInterfaceName())
+        .addStatement("return this.$L", reference)
+        .build());
   }
 
   @Override
-  public List<JavaFile> generate() {
-    List<JavaFile> javaFiles = new ArrayList<>();
-    BuilderClassGeneration classAnnotation = clazz.getAnnotation(BuilderClassGeneration.class);
-    if(classAnnotation == null)
-      return javaFiles;
-
-    System.out.println("Generating auditor");
-
-    TypeSpec.Builder notifySpec = TypeSpec.classBuilder(observerName.simpleName());
-    notifySpec.addField(className, reference, Modifier.PRIVATE, Modifier.FINAL);
-    notifySpec.addMethod(getterMethod(className, reference));
-
-    List<MethodParam> allFields = new ArrayList<>();
-    for(Field field:clazz.getDeclaredFields()) {
-      BuilderFieldSpec fieldAnnotation = field.getAnnotation(BuilderFieldSpec.class);
-      if(fieldAnnotation == null)
-        continue;
-
-      FieldSpec fieldSpec = FieldSpec.builder(boolean.class, field.getName(), Modifier.PRIVATE).initializer("true;").build();
-      notifySpec.addField(fieldSpec);
-
-      MethodParam param = new MethodParam(fieldAnnotation, field);
-      allFields.add(param);
-
-      notifySpec.addMethod(equalsMethod(field));
-      notifySpec.addMethod(notifyMethod(field));
-    }
-
-    allFields.sort(Comparator.comparingInt(p -> p.spec.order()));
-
-    notifySpec.addMethod(constructorCopyMethod());
-    notifySpec.addMethod(globalEqualsMethod(allFields));
-
-    JavaFile.Builder fileBuilder = JavaFile.builder(observerName.packageName(), notifySpec.build());
-    fileBuilder.addFileComment("Generated file, any modification can be lost...");
-
-    javaFiles.add(fileBuilder.build());
-    return javaFiles;
-
+  TypeSpec.Builder builder() {
+    return observerSpec;
   }
 
+  @Override
+  void addProperty(Property property) {
+    FieldSpec fieldSpec = FieldSpec.builder(boolean.class, property.field.getName(), Modifier.PRIVATE).initializer("true").build();
+    observerSpec.addField(fieldSpec);
+
+    observerSpec.addMethod(equalsMethod(property.field));
+    observerSpec.addMethod(notifyMethod(property.field));
+  }
+
+  @Override
+  void addProperties(List<Property> properties) {
+    observerSpec.addMethod(constructorCopyMethod());
+    observerSpec.addMethod(globalEqualsMethod(properties));
+  }
+  
   private MethodSpec constructorCopyMethod() {
     MethodSpec.Builder constructor = MethodSpec.constructorBuilder();
-        constructor.addParameter(className, reference);
+        constructor.addParameter(api.getInterfaceName(), reference);
         constructor.addStatement("this.$L = $L", reference, reference);
     return constructor.build();
   }
@@ -93,9 +73,9 @@ public class BuilderObserver extends AbstractGenerator {
                .build();
   }
 
-  private MethodSpec globalEqualsMethod(List<MethodParam> allFields) {
+  private MethodSpec globalEqualsMethod(List<Property> allFields) {
     String andStatement = "";
-    for(MethodParam p: allFields)
+    for(Property p: allFields)
       andStatement += " && " + p.field.getName();
     andStatement = andStatement.substring(4);
 

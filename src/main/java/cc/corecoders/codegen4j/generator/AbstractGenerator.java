@@ -1,7 +1,6 @@
 package cc.corecoders.codegen4j.generator;
 
 
-import cc.corecoders.codegen4j.annotation.BuilderFieldSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;

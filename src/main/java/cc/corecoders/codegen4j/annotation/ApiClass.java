@@ -9,9 +9,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiClass {
+  enum BuilderSpec {
+    Standard,
+    Observable,
+    None
+  }
+
   boolean implementation() default true;
   boolean immutable() default true;
   boolean bean() default true;
   boolean unmodifiable() default true;
-  boolean builder() default true;
+  BuilderSpec builder() default BuilderSpec.Standard;
 }

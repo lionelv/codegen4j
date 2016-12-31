@@ -8,16 +8,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@ApiClass
+@ApiClass(builder = ApiClass.BuilderSpec.Observable)
 public class Sample01Spec {
 
-  @ApiProperty(order = 1)
+  @ApiProperty(order = 1, init = "0")
   private int id;
 
   @ApiProperty(order = 2)
   private Long uuid;
 
-  @ApiProperty(order = 3)
+  @ApiProperty(order = 3, required = true)
   private String name;
 
   @ApiProperty(order = 4)

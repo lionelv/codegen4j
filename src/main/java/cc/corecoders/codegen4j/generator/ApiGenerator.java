@@ -15,6 +15,7 @@ public class ApiGenerator extends AbstractGenerator {
   static final String UnmodifiablePrefix = "Unmodifiable";
   static final String ImmutablePrefix = "Immutable";
   static final String BuilderSufix= "Builder";
+  static final String BuilderObserverSufix= "BuilderObserver";
 
 
   final ClassName name;
@@ -53,6 +54,15 @@ public class ApiGenerator extends AbstractGenerator {
       generators.add(new Unmodifiable(this));
     if(classAnnotation.immutable())
       generators.add(new Immutable(this));
+    if(classAnnotation.builder() != ApiClass.BuilderSpec.None) {
+      if(classAnnotation.builder() == ApiClass.BuilderSpec.Observable) {
+        BuilderObserver observer = new BuilderObserver(this);
+        generators.add(observer);
+        generators.add(new Builder(this, observer.className));
+      } else {
+        generators.add(new Builder(this));
+      }
+    }
 
     for(Field field: clazz.getDeclaredFields()) {
       ApiProperty fieldAnnotation = field.getAnnotation(ApiProperty.class);

@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiProperty {
   int order(); // for builder constructor retro-compatibility
+  boolean required() default false;
+  String init() default "null";
 }
