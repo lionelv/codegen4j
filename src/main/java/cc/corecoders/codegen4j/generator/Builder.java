@@ -6,22 +6,21 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import javax.lang.model.element.Modifier;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class Builder extends Api {
-  static final String observer = "observer";
+class Builder extends Api {
+  private static final String observer = "observer";
+  private static final String bean = "bean";
 
   private final ClassName observerName;
-  private final ParameterizedTypeName optionalObserverName;
   private TypeSpec.Builder builderSpec;
-  private String ctorArgs;
   private MethodSpec.Builder constructor;
   private MethodSpec.Builder observerConstructor;
   private Map<String, MethodSpec.Builder> withMethods = new HashMap<>();
+  private MethodSpec.Builder buildMethod;
 
   Builder(ApiGenerator api) {
     this(api, null);
@@ -31,12 +30,14 @@ public class Builder extends Api {
     super(api, ClassName.get(api.getInterfaceName().packageName(), api.getInterfaceName().simpleName() + ApiGenerator.BuilderSufix));
     this.observerName = observerName;
 
-    this.optionalObserverName = ParameterizedTypeName.get(ClassName.get(Optional.class), this.observerName);
+    ParameterizedTypeName optionalObserverName = ParameterizedTypeName.get(ClassName.get(Optional.class), this.observerName);
     this.builderSpec = TypeSpec.classBuilder(className.simpleName());
 
-    this.ctorArgs = "";
-
     this.constructor = MethodSpec.constructorBuilder();
+    this.buildMethod = MethodSpec.methodBuilder("build")
+        .addModifiers(Modifier.PUBLIC)
+        .returns(api.getInterfaceName())
+        .addStatement("$T $L = new $T()", api.getBeanName(), bean, api.getBeanName());
 
     if(isObservable()) {
       this.builderSpec.addField(optionalObserverName, Builder.observer, Modifier.PRIVATE);
@@ -57,11 +58,12 @@ public class Builder extends Api {
     String fieldName = property.field.getName();
     builderSpec.addField(property.field.getGenericType(), fieldName, Modifier.PRIVATE);
 
-    ctorArgs += ", " + fieldName;
-
     if(property.annotation.required()) {
       constructor.addParameter(property.field.getType(), fieldName);
       constructor.addStatement("this.$L = $L", fieldName, fieldName);
+
+      buildMethod.addStatement("if($L == $L) throw new $T(\"Required field missing ($L)\")", fieldName, property.annotation.init(), IllegalArgumentException.class, fieldName);
+
     } else {
       constructor.addStatement("this.$L = $L", fieldName, property.annotation.init());
     }
@@ -73,6 +75,8 @@ public class Builder extends Api {
     }
 
     withMethod(property);
+
+    buildMethod.addStatement("$L.set$L($L)", bean, Generators.mCase(fieldName), fieldName);
   }
 
   @Override
@@ -86,7 +90,7 @@ public class Builder extends Api {
       builderSpec.addMethod(withMethod.build());
     }
 
-    builderSpec.addMethod(buildMethod());
+    builderSpec.addMethod(buildMethod.addStatement("return $L", bean).build());
   }
 
   private void withMethod(Property property) {
@@ -114,16 +118,6 @@ public class Builder extends Api {
         .addStatement("this.$L = $L", name, name);
     if (isObservable())
       withMethod.addStatement("this.$L.ifPresent(d -> d.$L$L($L))", observer, BuilderObserver.notify, Name, name);
-  }
-
-  private MethodSpec buildMethod() {
-    ctorArgs = ctorArgs.substring(2);
-
-    return MethodSpec.methodBuilder("build")
-               .addModifiers(Modifier.PUBLIC)
-               .returns(api.getInterfaceName())
-               .addStatement("return new $T($L)", className, ctorArgs)
-               .build();
   }
 
   private boolean isObservable() {

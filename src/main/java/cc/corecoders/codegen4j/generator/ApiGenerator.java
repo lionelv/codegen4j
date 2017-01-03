@@ -21,6 +21,7 @@ public class ApiGenerator extends AbstractGenerator {
   final ClassName name;
 
   private ClassName interfaceName;
+  private ClassName beanName;
 
   List<Property> properties;
 
@@ -30,14 +31,21 @@ public class ApiGenerator extends AbstractGenerator {
     this.properties = new ArrayList<>();
   }
 
-  public ClassName getInterfaceName() {
-    return interfaceName;
-  }
-
-  public void setInterfaceName(ClassName interfaceName) {
+  void setInterfaceName(ClassName interfaceName) {
     this.interfaceName = interfaceName;
   }
 
+  ClassName getInterfaceName() {
+    return interfaceName;
+  }
+
+  ClassName getBeanName() {
+    return beanName;
+  }
+
+  public void setBeanName(ClassName beanName) {
+    this.beanName = beanName;
+  }
 
   @Override
   public List<JavaFile> generate() {

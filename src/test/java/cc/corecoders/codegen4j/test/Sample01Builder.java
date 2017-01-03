@@ -1,6 +1,7 @@
 // Generated file, any modification can be lost...
 package cc.corecoders.codegen4j.test;
 
+import java.lang.IllegalArgumentException;
 import java.lang.Long;
 import java.lang.String;
 import java.time.LocalDate;
@@ -87,6 +88,15 @@ class Sample01Builder {
   }
 
   public Sample01 build() {
-    return null; //new Sample01Builder(id, uuid, name, datestamp, listTimestamp, list, map);
+    Sample01Bean bean = new Sample01Bean();
+    bean.setId(id);
+    bean.setUuid(uuid);
+    if(name == null) throw new IllegalArgumentException("Required field missing (name)");
+    bean.setName(name);
+    bean.setDatestamp(datestamp);
+    bean.setListTimestamp(listTimestamp);
+    bean.setList(list);
+    bean.setMap(map);
+    return bean;
   }
 }

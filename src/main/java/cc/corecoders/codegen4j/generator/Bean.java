@@ -12,6 +12,8 @@ class Bean extends Api {
 
   Bean(ApiGenerator api) {
     super(api, ClassName.get(api.getInterfaceName().packageName(), api.getInterfaceName().simpleName() + ApiGenerator.BeanSuffix));
+    api.setBeanName(className);
+
     beanSpec = TypeSpec.classBuilder(className.simpleName());
     beanSpec.addSuperinterface(api.getInterfaceName());
     beanSpec.addMethod(MethodSpec.constructorBuilder().build());
