@@ -12,4 +12,11 @@ public class Property {
     this.annotation = annotation;
     this.field = field;
   }
+
+  public String initialization() {
+    if(field.getType() == String.class)
+      return "\"" + annotation.init() + "\"";
+
+    return annotation.init();
+  }
 }

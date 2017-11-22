@@ -18,6 +18,8 @@ class ImmutableSample01 implements Sample01 {
 
   private final String name;
 
+  private final String mnemo;
+
   private final LocalDate datestamp;
 
   private final LocalDateTime listTimestamp;
@@ -30,6 +32,7 @@ class ImmutableSample01 implements Sample01 {
     this.id = source.getId();
     this.uuid = source.getUuid();
     this.name = source.getName();
+    this.mnemo = source.getMnemo();
     this.datestamp = source.getDatestamp();
     this.listTimestamp = source.getListTimestamp();
     this.list = ImmutableList.copyOf(source.getList());
@@ -49,6 +52,11 @@ class ImmutableSample01 implements Sample01 {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public String getMnemo() {
+    return mnemo;
   }
 
   @Override

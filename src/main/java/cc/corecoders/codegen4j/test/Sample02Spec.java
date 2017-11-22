@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@ApiClass(builder = ApiClass.BuilderSpec.None)
-public class Sample01Spec {
+@ApiClass(builder = ApiClass.BuilderSpec.Standard)
+public class Sample02Spec {
   private final String listGroup = "TheList";
 
   @ApiProperty(order = 1, init = "0")

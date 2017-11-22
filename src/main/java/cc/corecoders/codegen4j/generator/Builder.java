@@ -30,7 +30,6 @@ class Builder extends Api {
     super(api, ClassName.get(api.getInterfaceName().packageName(), api.getInterfaceName().simpleName() + ApiGenerator.BuilderSufix));
     this.observerName = observerName;
 
-    ParameterizedTypeName optionalObserverName = ParameterizedTypeName.get(ClassName.get(Optional.class), this.observerName);
     this.builderSpec = TypeSpec.classBuilder(className.simpleName());
 
     this.constructor = MethodSpec.constructorBuilder();
@@ -40,6 +39,7 @@ class Builder extends Api {
         .addStatement("$T $L = new $T()", api.getBeanName(), bean, api.getBeanName());
 
     if(isObservable()) {
+      ParameterizedTypeName optionalObserverName = ParameterizedTypeName.get(ClassName.get(Optional.class), this.observerName);
       this.builderSpec.addField(optionalObserverName, Builder.observer, Modifier.PRIVATE);
       this.constructor.addStatement("this.$L = Optional.empty()", Builder.observer);
       this.observerConstructor = MethodSpec.constructorBuilder();

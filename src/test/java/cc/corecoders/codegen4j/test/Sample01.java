@@ -15,6 +15,8 @@ public interface Sample01 {
 
   String getName();
 
+  String getMnemo();
+
   LocalDate getDatestamp();
 
   LocalDateTime getListTimestamp();

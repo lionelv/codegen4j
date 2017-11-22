@@ -33,6 +33,11 @@ class UnmodifiableSample01 implements Sample01 {
   }
 
   @Override
+  public String getMnemo() {
+    return source.getMnemo();
+  }
+
+  @Override
   public LocalDate getDatestamp() {
     return source.getDatestamp();
   }

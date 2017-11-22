@@ -16,6 +16,8 @@ class Sample01Bean implements Sample01 {
 
   private String name;
 
+  private String mnemo;
+
   private LocalDate datestamp;
 
   private LocalDateTime listTimestamp;
@@ -52,6 +54,15 @@ class Sample01Bean implements Sample01 {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  @Override
+  public String getMnemo() {
+    return mnemo;
+  }
+
+  public void setMnemo(String mnemo) {
+    this.mnemo = mnemo;
   }
 
   @Override
